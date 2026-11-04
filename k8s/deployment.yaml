@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-microkernel-deployment
+  labels:
+    app.kubernetes.io/name: ai-microkernel
+    app.kubernetes.io/part-of: pediatric-neuro-forecaster
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ai-microkernel
+  template:
+    metadata:
+      labels:
+        app: ai-microkernel
+    spec:
+      containers:
+      - name: orchestrator
+        image: devfest/ai-microkernel:1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: "1000m"
+            memory: "1024Mi"
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
